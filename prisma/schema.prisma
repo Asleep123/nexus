@@ -1,0 +1,51 @@
+generator client {
+  provider             = "prisma-client-py"
+  interface            = "asyncio"
+  recursive_type_depth = 5
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("PRISMA_URL")
+}
+
+
+model Guild {
+  id              Int         @id @unique @default(autoincrement())
+  guildId         BigInt      @unique
+  suspensions     Suspension[]
+  suspended       Boolean     @default(false)
+  linkedOn        DateTime    @default(now())
+  channelId       BigInt?     @unique
+  locked          Boolean     @default(false)
+  webhook         String?      @unique
+  messages        Message[]
+}
+
+model Suspension {
+  id        Int      @id @unique @default(autoincrement())
+  user      User?    @relation(fields: [userId], references: [userId])
+  userId    BigInt?
+  guild     Guild?   @relation(fields: [guildId], references: [guildId])
+  guildId   BigInt?
+  reason    String
+  startedAt DateTime @default(now())
+  endsOn    DateTime
+}
+
+model User {
+  id          Int         @id @unique @default(autoincrement())
+  userId      BigInt      @unique
+  suspended   Boolean     @default(false)
+  suspensions Suspension[]
+}
+
+model Message {
+    id Int @unique @id @default(autoincrement())
+    userId BigInt
+    sentTo Guild[]
+    guildId BigInt
+    sentAt DateTime @default(now())
+    content String
+    
+}
